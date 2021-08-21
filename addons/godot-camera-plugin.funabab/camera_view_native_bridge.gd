@@ -13,6 +13,7 @@ class CameraViewNativeBridge extends Reference:
 	const PARAMETER_FLASH_MODE = "param_flash_mode";
 #	const PARAMETER_ENABLE_SHUTTER_SOUND = "param_enable_shutter_sound";
 	const PARAMETER_PITCH_TO_ZOOM = "param_pitch_to_zoom";
+	const PARAMETER_BACKGROUND_PREVIEW = "param_background_preview";
 	const PARAMETER_FACE_RECOGNITION = "param_face_recognition";
 	const PARAMETER_FACE_RECOGNITION_BOUND_COLOR = "param_face_recognition_bound_color";
 	const PARAMETER_FACE_RECOGNITION_BOUND_SHAPE = "param_face_recognition_bound_shape";
@@ -39,6 +40,12 @@ class CameraViewNativeBridge extends Reference:
 		__camera_features__ = ParameterSerializer.unserialize(features);
 		__node__.emit_signal("initialized");
 		resize_view(__node__.get_global_rect()); # HACK-FIX - for some reason camera view is fullscreen when view control is placed in TextureRect (non container node)
+		pass
+	
+	func _on_camera_rendering_():
+		__node__.emit_signal("rendering");
+		__node__.is_rendering = true;
+		__node__.update();
 		pass
 
 	func _on_picture_taken_(camera_error_code, data, detectedFacesExtra):

@@ -22,6 +22,8 @@ config/icon="res://icon.png"
 
 window/size/width=600
 window/size/height=1024
+window/per_pixel_transparency/allowed=true
+window/per_pixel_transparency/enabled=true
 window/handheld/orientation="sensor"
 
 [editor_plugins]

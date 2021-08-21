@@ -14,6 +14,7 @@ enum ERROR {
 
 #export(int, 1, 100) var image_quality := 100 setget set_image_quality;
 export var draw_camera_splash = true setget set_draw_camera_splash;
+export var background_preview = false setget set_background_preview;
 export(int, 1, 10) var image_resolution := 10 setget set_image_resolution;
 export(int, "Back", "Front") var camera_facing := 0 setget set_camera_facing;
 export(int, "Off", "Auto", "On", "Red Eye", "Torch") var flash_mode := 1 setget set_flash_mode;
@@ -29,12 +30,14 @@ export(int, "None", "Mono", "Negative", "Solarize", "Sepia") var color_effect :=
 
 var cameraViewBridge
 var is_initialized : bool = false
+var is_rendering : bool = false
 var camera_permission_granted = false
 
 var camera_icon = load("res://addons/godot-camera-plugin.funabab/icon_camera.png");
 
 signal picture_taken; # @parameters: error_code, image_texture, extra
 signal initialized;
+signal rendering;
 
 func is_face_recognition_supported():
 	if cameraViewBridge == null: return false;
@@ -72,6 +75,9 @@ func take_picture(minimum_number_of_face = 0):
 	pass
 
 func _ready():
+	if (background_preview):
+		get_tree().get_root().transparent_bg = true;
+	
 	get_tree().connect("on_request_permissions_result", self, "_on_permission_result");
 	pass
 
@@ -92,6 +98,7 @@ func _initialize_camera():
 
 func _draw():
 	if !draw_camera_splash: return;
+	if is_rendering: return;
 
 	var rect = get_rect();
 	rect.position = Vector2.ZERO;
@@ -137,6 +144,7 @@ func __get_parameters__()->Dictionary:
 		CameraViewNativeBridge.PARAMETER_FLASH_MODE: flash_mode,
 #		CameraViewNativeBridge.PARAMETER_ENABLE_SHUTTER_SOUND: enable_shutter_sound,
 		CameraViewNativeBridge.PARAMETER_PITCH_TO_ZOOM: pinch_to_zoom,
+		CameraViewNativeBridge.PARAMETER_BACKGROUND_PREVIEW: background_preview,
 		CameraViewNativeBridge.PARAMETER_FACE_RECOGNITION: face_recognition,
 		CameraViewNativeBridge.PARAMETER_FACE_RECOGNITION_BOUND_COLOR: face_recognition_bound_color.to_html(),
 		CameraViewNativeBridge.PARAMETER_FACE_RECOGNITION_BOUND_SHAPE: face_recognition_bound_shape,
@@ -166,6 +174,12 @@ func get_camera_facing()->bool:
 func set_draw_camera_splash(value):
 	draw_camera_splash = value;
 	update();
+	pass
+
+func set_background_preview(value):
+	background_preview = value;
+	if cameraViewBridge != null:
+		cameraViewBridge.set_parameter(CameraViewNativeBridge.PARAMETER_BACKGROUND_PREVIEW, value);
 	pass
 
 func set_image_resolution(value):
